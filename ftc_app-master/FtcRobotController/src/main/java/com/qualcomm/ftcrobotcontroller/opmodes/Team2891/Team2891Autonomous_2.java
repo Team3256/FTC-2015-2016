@@ -34,9 +34,12 @@ package com.qualcomm.ftcrobotcontroller.opmodes.Team2891;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.robocol.Telemetry;
 import com.qualcomm.robotcore.util.Range;
+
+
 
 public class Team2891Autonomous_2 extends OpMode {
 
@@ -49,10 +52,18 @@ public class Team2891Autonomous_2 extends OpMode {
     DcMotor rightFront;
     DcMotor rightBack;
 
+    DcMotor intakeMotor;
+
+    Servo leftTower;
+    Servo rightTower;
+    Servo intakeServo;
+
+
     double ticksPerRotation = 1120;
     double pi = 3.141592653589793238462;
     double diameter = 4;
     double circumference = pi*diameter;
+    double gearRatio = 54/30;
 
 
     public Team2891Autonomous_2() {
@@ -66,34 +77,41 @@ public class Team2891Autonomous_2 extends OpMode {
         leftBack = hardwareMap.dcMotor.get("leftBack");
         rightBack = hardwareMap.dcMotor.get("rightBack");
         rightFront = hardwareMap.dcMotor.get("rightFront");
-        leftBack.setDirection(DcMotor.Direction.REVERSE);
-        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        rightBack.setDirection(DcMotor.Direction.REVERSE);
+        intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
 
+        leftTower = hardwareMap.servo.get("leftTower");
+        leftTower.setPosition(0.6745);
+        rightTower = hardwareMap.servo.get("rightTower");
+        rightTower.setPosition(0.2078);
+        intakeServo = hardwareMap.servo.get("intakeServo");
+        intakeServo.setPosition(1-.775);
     }
 
     @Override
     public void loop() {
         //ticksPerRotation * circumference * inches
-        if (rightFront.getCurrentPosition() < ticksPerRotation*(1/circumference)*127){
-            leftFront.setPower(0.25);
-            leftBack.setPower(0.25);
-            rightFront.setPower(0.25);
-            rightBack.setPower(0.25);
-        }
-        else if (rightFront.getCurrentPosition() < ticksPerRotation){
-            rightFront.setPower(0);
-            rightBack.setPower(0);
+        if (rightFront.getCurrentPosition() > ticksPerRotation*(1/circumference)*gearRatio*110*-1){
+            leftFront.setPower(-0.25);
+            leftBack.setPower(-0.25);
+            rightFront.setPower(-0.25);
+            rightBack.setPower(-0.25);
+
+            intakeMotor.setPower(-1);
         }
         else{
             leftFront.setPower(0);
             leftBack.setPower(0);
             rightFront.setPower(0);
             rightBack.setPower(0);
+
+            intakeMotor.setPower(0);
         }
-        telemetry.addData("Ticks RightFront",rightFront.getCurrentPosition());
+        /*telemetry.addData("Ticks RightFront",rightFront.getCurrentPosition());
         telemetry.addData("Ticks RightBack",rightBack.getCurrentPosition());
         telemetry.addData("Ticks LeftFront",leftFront.getCurrentPosition());
-        telemetry.addData("Ticks LeftBack",leftBack.getCurrentPosition());
+        telemetry.addData("Ticks LeftBack",leftBack.getCurrentPosition());*/
     }
 
     @Override
