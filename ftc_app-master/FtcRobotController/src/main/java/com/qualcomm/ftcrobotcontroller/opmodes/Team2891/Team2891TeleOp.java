@@ -38,118 +38,77 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 public class Team2891TeleOp extends OpMode {
-
-    //defining drivetrain motors
     DcMotor leftFront;
     DcMotor leftBack;
     DcMotor rightFront;
     DcMotor rightBack;
-
-    //defining winch motors
     DcMotor leftWinch;
     DcMotor rightWinch;
-
     DcMotor intakeMotor;
-
-    //defining towers(the hanging servos)
+    DcMotor scorerMotor;
     Servo leftTower;
     Servo rightTower;
-    Servo intakeServo;
-
-
-    //misc variables
-    double winchPower;
     int counter = 0;
     double leftTowerPosition;
     double rightTowerPosition;
-
-    //joystick variables
     float left1;
     float right1;
     boolean intakeIn;
     boolean intakeOut;
-    boolean intakeLeft;
-    boolean intakeRight;
-
-    // arcade drive
+    boolean rightArm;
+    boolean leftArm;
     float lefty;
     float rightx;
-
-    float left2; //intake servo tilt
-    float right2; // winch motor
-
-    boolean rightbumper2; // winch down
-    boolean leftbumper2; // winch down
-    float righttrigger2; // winch up
-    float lefttrigger2; // winch up
-
-
+    float right2;
+    boolean rightbumper2;
+    boolean leftbumper2;
+    float righttrigger2;
+    float lefttrigger2;
+    float scorerSlide;
     public Team2891TeleOp() {
-
     }
-
     @Override
     public void init() {
-        //matching motors to configured motors on phone
-
-
         leftFront = hardwareMap.dcMotor.get("leftFront");
         leftBack = hardwareMap.dcMotor.get("leftBack");
         rightBack = hardwareMap.dcMotor.get("rightBack");
         rightFront = hardwareMap.dcMotor.get("rightFront");
-
         rightFront.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.REVERSE);
-
-        //rightFront.setDirection(DcMotor.Direction.REVERSE);
-        //rightBack.setDirection(DcMotor.Direction.REVERSE);
-
         leftWinch = hardwareMap.dcMotor.get("leftWinch");
         rightWinch = hardwareMap.dcMotor.get("rightWinch");
         leftWinch.setDirection(DcMotor.Direction.REVERSE);
-        //matching servos to configured servos
-
         intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
-
         leftTower = hardwareMap.servo.get("leftTower");
-        leftTower.setPosition(0.6745);
+        leftTower.setPosition(0.6118);
         rightTower = hardwareMap.servo.get("rightTower");
-        rightTower.setPosition(0.2078);
-        intakeServo = hardwareMap.servo.get("intakeServo");
-        intakeServo.setPosition(1-0.775);
-
+        rightTower.setPosition(0.2549);
+        scorerMotor = hardwareMap.dcMotor.get("scorerMotor");
     }
-
     @Override
     public void loop() {
         left1 = -gamepad1.left_stick_y;
         right1 = -gamepad1.right_stick_y;
-
-        //arcade
         lefty = -gamepad1.left_stick_y;
         rightx = -gamepad1.right_stick_x;
-
-        left2 = -gamepad2.left_stick_x;
         right2 = -gamepad2.right_stick_y;
-
         rightbumper2 = gamepad2.right_bumper;
         righttrigger2 = gamepad2.right_trigger;
         leftbumper2 = gamepad2.left_bumper;
         lefttrigger2 = gamepad2.left_trigger;
         intakeIn = gamepad2.a;
         intakeOut = gamepad2.y;
-        intakeLeft = gamepad2.x;
-        intakeRight = gamepad2.b;
-
+        leftArm = gamepad2.x;
+        rightArm = gamepad2.b;
+        scorerSlide = -gamepad2.left_stick_x;
         //tankDrive(left1, right1);
         arcadeDrive(lefty, rightx);
         winchDrive(right2);
-        Intake(intakeIn, intakeOut);
-        intake(intakeLeft, intakeRight);
-
+        boyzInTheHood(intakeIn, intakeOut);
+        ShootArms(leftArm, rightArm);
+        ScorerPivot(scorerSlide);
         telemetry.addData("righttrigger", righttrigger2);
         telemetry.addData("lefttrigger", lefttrigger2);
-
         if (counter >= 2) {
             pivotHangersLeft(leftbumper2, lefttrigger2);
             pivotHangersRight(rightbumper2, righttrigger2);
@@ -157,12 +116,9 @@ public class Team2891TeleOp extends OpMode {
         } else
             counter++;
     }
-
     @Override
     public void stop() {
-
     }
-
     public void tankDrive(double left1, double right1) //drives right wheels with right joystick and left wheels with left joystick
     {
         leftBack.setPower(right1);
@@ -170,35 +126,26 @@ public class Team2891TeleOp extends OpMode {
         rightBack.setPower(left1);
         rightFront.setPower(left1);
     }
-
     public void arcadeDrive(double throttle, double turn) {
         double left = throttle + turn;
         double right = throttle - turn;
-
         left = Range.clip(left, -1, 1);
         right = Range.clip(right, -1, 1);
-
         leftBack.setPower(left);
         leftFront.setPower(left);
         rightBack.setPower(right);
         rightFront.setPower(right);
-
-
     }
-
-    public void Intake(boolean intakeIn, boolean intakeOut) //drives right wheels with right joystick and left wheels with left joystick
+    public void boyzInTheHood(boolean boyzInTheHoodIn, boolean boyzInTheHoodOut) //drives right wheels with right joystick and left wheels with left joystick
     {
-        if (intakeIn) {
+        if (boyzInTheHoodIn) {
             intakeMotor.setPower(1);
-        } else if (intakeOut) {
-
+        } else if (boyzInTheHoodOut) {
             intakeMotor.setPower(-1);
         } else {
             intakeMotor.setPower(0);
         }
     }
-
-
     public void winchDrive(float right2) {
         if (right2 >= 0.15 || right2 <= 0.15) {
             leftWinch.setPower(right2);
@@ -208,7 +155,6 @@ public class Team2891TeleOp extends OpMode {
             rightWinch.setPower(0);
         }
     }
-
     public void pivotHangersRight(boolean rightbumper2, float righttrigger2) {
         if (rightbumper2) {
             rightTowerPosition = (rightTower.getPosition() + 0.01);
@@ -217,17 +163,13 @@ public class Team2891TeleOp extends OpMode {
         } else {
             rightTowerPosition = rightTower.getPosition();
         }
-
-        //truncate large or small values
         if (rightTowerPosition > 1)
             rightTowerPosition = 1;
         if (rightTowerPosition < 0)
             rightTowerPosition = 0;
-
         rightTower.setPosition(rightTowerPosition);
         telemetry.addData("posRight", rightTower.getPosition());
     }
-
     public void pivotHangersLeft(boolean leftbumper2, float lefttrigger2) {
         if (leftbumper2) {
             leftTowerPosition = (leftTower.getPosition() - 0.005);
@@ -236,27 +178,30 @@ public class Team2891TeleOp extends OpMode {
         } else {
             leftTowerPosition = leftTower.getPosition();
         }
-
         if (leftTowerPosition > 1)
             leftTowerPosition = 1;
         if (leftTowerPosition < 0)
             leftTowerPosition = 0;
-
         leftTower.setPosition(leftTowerPosition);
         telemetry.addData("posLeft", leftTower.getPosition());
     }
-
-    public void intake(boolean intakeLeft, boolean intakeRight) {
-        telemetry.addData("ServoIntakePosition", intakeServo.getPosition());
-        if (intakeLeft){
-            intakeServo.setPosition(1-0.775-.12);
+    public void ShootArms(boolean leftArm, boolean rightArm) {
+        if (leftArm) {
+            leftTower.setPosition(.2274);
         }
-        else if (intakeRight){
-            intakeServo.setPosition(1-0.775+.12);
+        else if (rightArm){
+            rightTower.setPosition(.6078);
+        }
+    }
+    public void ScorerPivot (float scorerSlide) {
+        if (scorerSlide<0){
+            scorerMotor.setPower(-0.69);
+        }
+        else if (scorerSlide>0){
+            scorerMotor.setPower(0.69);
         }
         else {
-            intakeServo.setPosition(1-0.775);
+            scorerMotor.setPower(0);
         }
-
     }
 }
