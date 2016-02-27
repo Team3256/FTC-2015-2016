@@ -51,19 +51,18 @@ public class Team2891Autonomous_2 extends OpMode {
     DcMotor leftBack;
     DcMotor rightFront;
     DcMotor rightBack;
-
     DcMotor intakeMotor;
 
     Servo leftTower;
     Servo rightTower;
-    Servo intakeServo;
 
 
     double ticksPerRotation = 1120;
-    double pi = 3.141592653589793238462;
+    double pi = 3.1415926535897932384626;
     double diameter = 4;
     double circumference = pi*diameter;
     double gearRatio = 54/30;
+    double distanceTraveled = 110;
 
 
     public Team2891Autonomous_2() {
@@ -85,19 +84,15 @@ public class Team2891Autonomous_2 extends OpMode {
         leftTower.setPosition(0.6745);
         rightTower = hardwareMap.servo.get("rightTower");
         rightTower.setPosition(0.2078);
-        intakeServo = hardwareMap.servo.get("intakeServo");
-        intakeServo.setPosition(1-.775);
     }
 
     @Override
     public void loop() {
-        //ticksPerRotation * circumference * inches
-        if (rightFront.getCurrentPosition() > ticksPerRotation*(1/circumference)*gearRatio*110*-1){
-            leftFront.setPower(-0.25);
-            leftBack.setPower(-0.25);
+        if (rightFront.getCurrentPosition() > ticksPerRotation*(1/circumference)*gearRatio*distanceTraveled*-1){
+            leftFront.setPower(0.25);
+            leftBack.setPower(0.25);
             rightFront.setPower(-0.25);
             rightBack.setPower(-0.25);
-
             intakeMotor.setPower(-1);
         }
         else{
@@ -105,13 +100,13 @@ public class Team2891Autonomous_2 extends OpMode {
             leftBack.setPower(0);
             rightFront.setPower(0);
             rightBack.setPower(0);
-
             intakeMotor.setPower(0);
         }
         /*telemetry.addData("Ticks RightFront",rightFront.getCurrentPosition());
         telemetry.addData("Ticks RightBack",rightBack.getCurrentPosition());
         telemetry.addData("Ticks LeftFront",leftFront.getCurrentPosition());
         telemetry.addData("Ticks LeftBack",leftBack.getCurrentPosition());*/
+        telemetry.addData("motorValue:", ticksPerRotation*(1/circumference)*gearRatio*distanceTraveled*-1);
     }
 
     @Override

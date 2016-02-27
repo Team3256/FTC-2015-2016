@@ -31,7 +31,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package com.qualcomm.ftcrobotcontroller.opmodes.Team2891;
 
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -62,9 +61,11 @@ public class Team2891TeleOp extends OpMode {
     float right2;
     boolean rightbumper2;
     boolean leftbumper2;
+    boolean rightbumper1;
     float righttrigger2;
     float lefttrigger2;
-    float scorerSlide;
+    boolean scorerSlideLeft;
+    boolean scorerSlideRight;
     public Team2891TeleOp() {
     }
     @Override
@@ -92,6 +93,7 @@ public class Team2891TeleOp extends OpMode {
         lefty = -gamepad1.left_stick_y;
         rightx = -gamepad1.right_stick_x;
         right2 = -gamepad2.right_stick_y;
+        rightbumper1 = gamepad1.right_bumper;
         rightbumper2 = gamepad2.right_bumper;
         righttrigger2 = gamepad2.right_trigger;
         leftbumper2 = gamepad2.left_bumper;
@@ -100,13 +102,14 @@ public class Team2891TeleOp extends OpMode {
         intakeOut = gamepad2.y;
         leftArm = gamepad2.x;
         rightArm = gamepad2.b;
-        scorerSlide = -gamepad2.left_stick_x;
-        //tankDrive(left1, right1);
-        arcadeDrive(lefty, rightx);
+        scorerSlideLeft = gamepad1.x;
+        scorerSlideRight = gamepad1.b;
+        tankDrive(left1, right1, rightbumper1);
+        //arcadeDrive(lefty, rightx);
         winchDrive(right2);
-        boyzInTheHood(intakeIn, intakeOut);
+        boyzInDaHood(intakeIn, intakeOut);
         ShootArms(leftArm, rightArm);
-        ScorerPivot(scorerSlide);
+        ScorerPivot(scorerSlideLeft, scorerSlideRight);
         telemetry.addData("righttrigger", righttrigger2);
         telemetry.addData("lefttrigger", lefttrigger2);
         if (counter >= 2) {
@@ -119,12 +122,19 @@ public class Team2891TeleOp extends OpMode {
     @Override
     public void stop() {
     }
-    public void tankDrive(double left1, double right1) //drives right wheels with right joystick and left wheels with left joystick
+    public void tankDrive(double left1, double right1, boolean rightbumper1) //drives right wheels with right joystick and left wheels with left joystick
     {
-        leftBack.setPower(right1);
-        leftFront.setPower(right1);
-        rightBack.setPower(left1);
-        rightFront.setPower(left1);
+        if (rightbumper1) {
+            leftBack.setPower(-left1);
+            leftFront.setPower(-left1);
+            rightBack.setPower(-right1);
+            rightFront.setPower(-right1);
+        } else {
+            leftBack.setPower(right1);
+            leftFront.setPower(right1);
+            rightBack.setPower(left1);
+            rightFront.setPower(left1);
+        }
     }
     public void arcadeDrive(double throttle, double turn) {
         double left = throttle + turn;
@@ -136,11 +146,12 @@ public class Team2891TeleOp extends OpMode {
         rightBack.setPower(right);
         rightFront.setPower(right);
     }
-    public void boyzInTheHood(boolean boyzInTheHoodIn, boolean boyzInTheHoodOut) //drives right wheels with right joystick and left wheels with left joystick
+
+    public void boyzInDaHood(boolean boyzInDaHoodIn, boolean boyzInDaHoodOut) //drives right wheels with right joystick and left wheels with left joystick
     {
-        if (boyzInTheHoodIn) {
+        if (boyzInDaHoodIn) {
             intakeMotor.setPower(1);
-        } else if (boyzInTheHoodOut) {
+        } else if (boyzInDaHoodOut) {
             intakeMotor.setPower(-1);
         } else {
             intakeMotor.setPower(0);
@@ -189,16 +200,16 @@ public class Team2891TeleOp extends OpMode {
         if (leftArm) {
             leftTower.setPosition(.2274);
         }
-        else if (rightArm){
+        if (rightArm){
             rightTower.setPosition(.6078);
         }
     }
-    public void ScorerPivot (float scorerSlide) {
-        if (scorerSlide<0){
-            scorerMotor.setPower(-0.69);
+    public void ScorerPivot (boolean scorerSlideLeft, boolean scorerSlideRight) {
+        if (scorerSlideLeft){
+            scorerMotor.setPower(-0.5);
         }
-        else if (scorerSlide>0){
-            scorerMotor.setPower(0.69);
+        else if (scorerSlideRight){
+            scorerMotor.setPower(0.5);
         }
         else {
             scorerMotor.setPower(0);
