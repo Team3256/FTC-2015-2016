@@ -49,6 +49,21 @@ public class Team2891Autonomous extends OpMode {
     DcMotor rightFront;
     DcMotor rightBack;
 
+
+    double P;
+    double I;
+    double D;
+    double kP = 1;
+    double kI = 0;
+    double kD = 0;
+    double error = 0;
+    double sumError = 0;
+    double changeError = 0;
+    double prevError = 0;
+    double PID;
+    double PIDOutput;
+    double pi = 3.1415926535897932384626;
+
     public Team2891Autonomous() {
 
     }
@@ -68,7 +83,7 @@ public class Team2891Autonomous extends OpMode {
     @Override
     public void loop() {
         //ticksPerRotation * circumference * inches
-        if (rightFront.getCurrentPosition() < 1120*(1/(4*3.14159265358))*127){
+        /*if (rightFront.getCurrentPosition() < 1120*(1/(4*3.14159265358))*127){
             leftFront.setPower(0.25);
             leftBack.setPower(0.25);
             rightFront.setPower(0.25);
@@ -84,11 +99,39 @@ public class Team2891Autonomous extends OpMode {
         telemetry.addData("Ticks RightBack",rightBack.getCurrentPosition());
         telemetry.addData("Ticks LeftFront",leftFront.getCurrentPosition());
         telemetry.addData("Ticks LeftBack",leftBack.getCurrentPosition());
+    */
+        PIDOutput = calculatePID(leftBack.getCurrentPosition(), (1120 * (1 / 4 * pi)) * 20 );
+        if (rightFront.getCurrentPosition() < (1120 * (1 / 4 * pi)) * 20) {
+            leftFront.setPower(PIDOutput);
+            leftBack.setPower(PIDOutput);
+            rightFront.setPower(PIDOutput);
+            rightBack.setPower(PIDOutput);
+        } else
+            leftFront.setPower(0);
+            leftBack.setPower(0);
+            rightFront.setPower(0);
+            rightBack.setPower(0);
     }
-
     @Override
     public void stop() {
+        leftFront.setPower(0);
+        leftBack.setPower(0);
+        rightFront.setPower(0);
+        rightBack.setPower(0);
+    }
+    public double calculatePID(double current, double setpoint) {
+        error = setpoint - current;
+        sumError = sumError + error;
+        changeError = (prevError - error);
+        P = kP * error;
+        I = sumError * kI;
+        D = kD * changeError;
+        PID = P + I + D;
+        prevError = error;
 
+        telemetry.addData("PID", PID);
+
+        return PID;
     }
 
 }

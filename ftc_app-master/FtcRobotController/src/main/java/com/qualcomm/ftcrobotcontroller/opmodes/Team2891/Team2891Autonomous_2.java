@@ -41,34 +41,41 @@ import com.qualcomm.robotcore.util.Range;
 
 
 
-public class Team2891Autonomous_2 extends OpMode {
 
+public class Team2891Autonomous_2 extends OpMode {
     /**
      * Constructor
      */
-
     DcMotor leftFront;
     DcMotor leftBack;
     DcMotor rightFront;
     DcMotor rightBack;
     DcMotor intakeMotor;
-
     Servo leftTower;
     Servo rightTower;
-
+    Servo dongerLord;
 
     double ticksPerRotation = 1120;
     double pi = 3.1415926535897932384626;
     double diameter = 4;
     double circumference = pi*diameter;
     double gearRatio = 54/30;
-    double distanceTraveled = 110;
-
+    double targetDistance = 50*48/35;
+    double P;
+    double I;
+    double D;
+    double kP = 0.2;
+    double kI = 0;
+    double kD = 0;
+    double error = 0;
+    double sumError = 0;
+    double changeError = 0;
+    double prevError = 0;
+    double PID;
+    double PIDOutput;
 
     public Team2891Autonomous_2() {
-
     }
-
     @Override
     public void init() {
 
@@ -76,40 +83,65 @@ public class Team2891Autonomous_2 extends OpMode {
         leftBack = hardwareMap.dcMotor.get("leftBack");
         rightBack = hardwareMap.dcMotor.get("rightBack");
         rightFront = hardwareMap.dcMotor.get("rightFront");
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
-        rightBack.setDirection(DcMotor.Direction.REVERSE);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        leftBack.setDirection(DcMotor.Direction.REVERSE);
         intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
 
         leftTower = hardwareMap.servo.get("leftTower");
         leftTower.setPosition(0.6745);
         rightTower = hardwareMap.servo.get("rightTower");
         rightTower.setPosition(0.2078);
+
+        dongerLord = hardwareMap.servo.get("dongerLord");
+
     }
 
     @Override
     public void loop() {
-        if (rightFront.getCurrentPosition() > ticksPerRotation*(1/circumference)*gearRatio*distanceTraveled*-1){
-            leftFront.setPower(0.25);
-            leftBack.setPower(0.25);
-            rightFront.setPower(-0.25);
-            rightBack.setPower(-0.25);
-            intakeMotor.setPower(-1);
+        telemetry.addData("Encoder Value", ticksPerRotation * (1 / circumference) * gearRatio * targetDistance);
+        telemetry.addData("Encoder Current Value", rightFront.getCurrentPosition());
+
+        PIDOutput = calculatePID(rightFront.getCurrentPosition(), ticksPerRotation * (1 / circumference) * gearRatio * targetDistance);
+
+        if (Math.abs(leftFront.getCurrentPosition()) < ticksPerRotation * (1 / circumference) * gearRatio * targetDistance) {
+            leftFront.setPower(PIDOutput);
+            leftBack.setPower(PIDOutput);
+            rightFront.setPower(PIDOutput);
+            rightBack.setPower(PIDOutput);
+        } else if (Math.abs(leftFront.getCurrentPosition()) > ticksPerRotation * (1 / circumference) * gearRatio * targetDistance){
+            leftFront.setPower(-PIDOutput);
+            leftBack.setPower(-PIDOutput);
+            rightFront.setPower(-PIDOutput);
+            rightBack.setPower(-PIDOutput);
         }
         else{
             leftFront.setPower(0);
             leftBack.setPower(0);
             rightFront.setPower(0);
             rightBack.setPower(0);
-            intakeMotor.setPower(0);
         }
-        /*telemetry.addData("Ticks RightFront",rightFront.getCurrentPosition());
-        telemetry.addData("Ticks RightBack",rightBack.getCurrentPosition());
-        telemetry.addData("Ticks LeftFront",leftFront.getCurrentPosition());
-        telemetry.addData("Ticks LeftBack",leftBack.getCurrentPosition());*/
-        telemetry.addData("motorValue:", ticksPerRotation*(1/circumference)*gearRatio*distanceTraveled*-1);
     }
 
-    @Override
+    public double calculatePID(double current, double setpoint) {
+            error = setpoint - current;
+            sumError = sumError + error;
+            changeError = (prevError - error);
+            P = kP * error;
+            I = sumError * kI;
+            D = kD * changeError;
+            PID = P + I + D;
+            prevError = error;
+
+            telemetry.addData("PID", PID);
+            if (PID>1){
+                return 1;
+            }
+            if (PID<1){
+                return -1;
+            }
+
+            return PID;
+    }
     public void stop() {
 
     }

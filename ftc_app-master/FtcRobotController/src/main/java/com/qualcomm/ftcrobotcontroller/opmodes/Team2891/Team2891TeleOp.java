@@ -45,11 +45,15 @@ public class Team2891TeleOp extends OpMode {
     DcMotor rightWinch;
     DcMotor intakeMotor;
     DcMotor scorerMotor;
+
     Servo leftTower;
     Servo rightTower;
+
     int counter = 0;
+
     double leftTowerPosition;
     double rightTowerPosition;
+
     float left1;
     float right1;
     boolean intakeIn;
@@ -66,7 +70,16 @@ public class Team2891TeleOp extends OpMode {
     float lefttrigger2;
     boolean scorerSlideLeft;
     boolean scorerSlideRight;
+
+    //PID Constants
+    double kP=0;
+    double kI=0;
+    double kD=0;
+    double sumError=0;
+    double prevError=0;
+
     public Team2891TeleOp() {
+
     }
     @Override
     public void init() {
@@ -104,6 +117,9 @@ public class Team2891TeleOp extends OpMode {
         rightArm = gamepad2.b;
         scorerSlideLeft = gamepad1.x;
         scorerSlideRight = gamepad1.b;
+
+        Methods.doStuff();
+
         tankDrive(left1, right1, rightbumper1);
         //arcadeDrive(lefty, rightx);
         winchDrive(right2);
@@ -215,4 +231,5 @@ public class Team2891TeleOp extends OpMode {
             scorerMotor.setPower(0);
         }
     }
+
 }
