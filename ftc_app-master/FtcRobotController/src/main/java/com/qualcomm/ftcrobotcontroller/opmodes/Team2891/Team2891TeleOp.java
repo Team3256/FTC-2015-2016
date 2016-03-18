@@ -48,11 +48,16 @@ public class Team2891TeleOp extends OpMode {
 
     Servo leftTower;
     Servo rightTower;
+    Servo dongerLord;
+    Servo ziplineTriggerLeft;
+    Servo ziplineTriggerRight;
 
     int counter = 0;
 
     double leftTowerPosition;
     double rightTowerPosition;
+    double dongerLordPosition;
+    double ziplineTriggerPosition;
 
     float left1;
     float right1;
@@ -61,22 +66,18 @@ public class Team2891TeleOp extends OpMode {
     boolean rightArm;
     boolean leftArm;
     float lefty;
-    float rightx;
+    boolean servoBangOut;
+    boolean servoBangIn;
     float right2;
     boolean rightbumper2;
     boolean leftbumper2;
     boolean rightbumper1;
     float righttrigger2;
     float lefttrigger2;
+    float righttrigger1;
+    float lefttrigger1;
     boolean scorerSlideLeft;
     boolean scorerSlideRight;
-
-    //PID Constants
-    double kP=0;
-    double kI=0;
-    double kD=0;
-    double sumError=0;
-    double prevError=0;
 
     public Team2891TeleOp() {
 
@@ -98,36 +99,48 @@ public class Team2891TeleOp extends OpMode {
         rightTower = hardwareMap.servo.get("rightTower");
         rightTower.setPosition(0.2549);
         scorerMotor = hardwareMap.dcMotor.get("scorerMotor");
+        dongerLord = hardwareMap.servo.get("dongerLord");
+        dongerLord.setPosition(0.95);
+        ziplineTriggerLeft = hardwareMap.servo.get("ziplineServoLeft");
+        ziplineTriggerRight = hardwareMap.servo.get("ziplineServoRight");
     }
     @Override
     public void loop() {
         left1 = -gamepad1.left_stick_y;
         right1 = -gamepad1.right_stick_y;
-        lefty = -gamepad1.left_stick_y;
-        rightx = -gamepad1.right_stick_x;
+        lefty = -gamepad2.left_stick_y;
         right2 = -gamepad2.right_stick_y;
+
         rightbumper1 = gamepad1.right_bumper;
         rightbumper2 = gamepad2.right_bumper;
         righttrigger2 = gamepad2.right_trigger;
         leftbumper2 = gamepad2.left_bumper;
         lefttrigger2 = gamepad2.left_trigger;
+
+        righttrigger1 = gamepad1.right_trigger;
+        lefttrigger1 = gamepad1.left_trigger;
+
         intakeIn = gamepad2.a;
         intakeOut = gamepad2.y;
         leftArm = gamepad2.x;
         rightArm = gamepad2.b;
         scorerSlideLeft = gamepad1.x;
         scorerSlideRight = gamepad1.b;
-
-        Methods.doStuff();
+        servoBangIn = gamepad1.a;
+        servoBangOut = gamepad1.y;
 
         tankDrive(left1, right1, rightbumper1);
         //arcadeDrive(lefty, rightx);
         winchDrive(right2);
         boyzInDaHood(intakeIn, intakeOut);
         ShootArms(leftArm, rightArm);
-        ScorerPivot(scorerSlideLeft, scorerSlideRight);
-        telemetry.addData("righttrigger", righttrigger2);
-        telemetry.addData("lefttrigger", lefttrigger2);
+
+        Bang(servoBangIn, servoBangOut);
+        ZiplinesLeft(lefty);
+        telemetry.addData("DONGERLORD", dongerLord.getPosition());
+        telemetry.addData("ZIPLINE_LEFT", ziplineTriggerLeft.getPosition());
+        telemetry.addData("ZIPLINE_RIGHT", ziplineTriggerRight.getPosition());
+        telemetry.addData("ButtonA****", servoBangIn);
         if (counter >= 2) {
             pivotHangersLeft(leftbumper2, lefttrigger2);
             pivotHangersRight(rightbumper2, righttrigger2);
@@ -220,16 +233,41 @@ public class Team2891TeleOp extends OpMode {
             rightTower.setPosition(.6078);
         }
     }
-    public void ScorerPivot (boolean scorerSlideLeft, boolean scorerSlideRight) {
-        if (scorerSlideLeft){
-            scorerMotor.setPower(-0.5);
+    public void Bang (boolean servoBangIn, boolean servoBangOut){
+        if (servoBangIn){
+            dongerLordPosition += 0.005;
         }
-        else if (scorerSlideRight){
-            scorerMotor.setPower(0.5);
+        else if (servoBangOut){
+            dongerLordPosition -= 0.005;
         }
         else {
-            scorerMotor.setPower(0);
+            dongerLordPosition = dongerLord.getPosition();
         }
+        if (dongerLordPosition<0){
+            dongerLordPosition=0;
+        }
+        if (dongerLordPosition>1){
+            dongerLordPosition=1;
+        }
+        dongerLord.setPosition(dongerLordPosition);
+        telemetry.addData("ButtonA", servoBangIn);
     }
-
+    public void ZiplinesLeft (float triggerL){
+        if (triggerL > 0.15){
+            ziplineTriggerPosition = (ziplineTriggerLeft.getPosition()+0.15);
+        }
+        else if (triggerL < 0.15){
+            ziplineTriggerPosition = (ziplineTriggerLeft.getPosition()-0.15);
+        }
+        else {
+            ziplineTriggerPosition = (ziplineTriggerLeft.getPosition());
+        }
+        if (ziplineTriggerPosition<0){
+            ziplineTriggerPosition=0;
+        }
+        if (ziplineTriggerPosition>0){
+            ziplineTriggerPosition=1;
+        }
+        ziplineTriggerLeft.setPosition(ziplineTriggerPosition);
+    }
 }

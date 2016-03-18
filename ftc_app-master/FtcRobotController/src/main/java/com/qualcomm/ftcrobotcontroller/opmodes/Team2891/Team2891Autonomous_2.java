@@ -42,7 +42,7 @@ import com.qualcomm.robotcore.util.Range;
 
 
 
-public class Team2891Autonomous_2 extends OpMode {
+public class Team2891Autonomous_2 extends OpMode{
     /**
      * Constructor
      */
@@ -54,6 +54,7 @@ public class Team2891Autonomous_2 extends OpMode {
     Servo leftTower;
     Servo rightTower;
     Servo dongerLord;
+    Servo ziplineTrigger;
 
     double ticksPerRotation = 1120;
     double pi = 3.1415926535897932384626;
@@ -93,6 +94,7 @@ public class Team2891Autonomous_2 extends OpMode {
         rightTower.setPosition(0.2078);
 
         dongerLord = hardwareMap.servo.get("dongerLord");
+        ziplineTrigger = hardwareMap.servo.get("ziplineServo");
 
     }
 
